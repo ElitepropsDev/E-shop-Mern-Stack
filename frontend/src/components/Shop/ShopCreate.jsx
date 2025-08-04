@@ -19,34 +19,43 @@ const ShopCreate = () => {
   const [visible, setVisible] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+        const config = { headers: { "Content-Type": "multipart/form-data" } };
+    
+        const newForm = new FormData();
+        newForm.append("file", avatar);
+        newForm.append("name", name);
+        newForm.append("email", email);
+        newForm.append("password", password);
+        newForm.append("zipode", zipCode);
+        newForm.append("address", address);
+        newForm.append("phoneNumber", phoneNumber);
+    
+        axios
+          .post(`${server}/shop/create-shop`, newForm, config)
+          .then((res) => {
+            toast(res.data.message);
+            setName("");
+            setEmail("");
+            setPassword("");
+            setAvatar();
+            setZipCode();
+            setAddress("");
+            setPhoneNumber();
+          })
+          .catch((error) => {
+            toast.error(error.response.data.message);
+          });
+  };
+
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setAvatar(file);
       setAvatarPreview(URL.createObjectURL(file)); // ✅ Generate preview URL
     }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    await axios
-      .post(
-        `${server}/user/login-user`,
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      )
-      .then((res) => {
-        toast.success("Login Success!");
-        navigate("/");
-        window.location.reload(true);
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
-      });
   };
 
   return (

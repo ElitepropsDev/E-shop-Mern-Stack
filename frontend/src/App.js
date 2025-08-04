@@ -75,4 +75,4 @@ const App = () => {
 
 export default App;
 //need to fix the search img route for mobile screen in herader.jsx
-// shop create new 3:57
+// double seller re-entry in the db needs to be fixed. second video 4:27

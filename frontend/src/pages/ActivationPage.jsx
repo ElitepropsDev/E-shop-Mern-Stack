@@ -24,7 +24,7 @@ const ActivationPage = () => {
             };
             activationEmail();
         };
-    }, [token]);
+    }, []);
 
 
   return (

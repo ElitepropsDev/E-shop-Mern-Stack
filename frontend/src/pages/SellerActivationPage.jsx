@@ -1,43 +1,35 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { server } from "../server";
-import { toast } from "react-toastify";
 
 const SellerActivationPage = () => {
-  const { token: activation_token } = useParams();
-  const [status, setStatus] = useState("loading");
+  const { token } = useParams();
+  const [error, setError] = useState(false);
+  const [activated, setActivated] = useState(false);
+
+  const hasActivated = useRef(false); // 🔒 This is the lock
 
   useEffect(() => {
-    if (activation_token) {
-      const activateAccount = async () => {
+    const activateSeller = async () => {
+      if (token && !hasActivated.current) {
+        hasActivated.current = true; // lock it immediately
+
         try {
           const res = await axios.post(`${server}/shop/activation`, {
-            activation_token,
+            activation_token: token,
           });
-          console.log("✅ Activation success:", res.data);
-          setStatus("success");
-          toast.success("🎉 Account created successfully!");
-        } catch (err) {
-          console.log("❌ Activation error:", err.response?.data?.message);
-          const msg = err.response?.data?.message;
-
-          if (msg === "User already exists") {
-            toast.error("⚠️ Account already exists!");
-            setStatus("exists");
-          } else if (msg === "Invalid token") {
-            toast.error("⚠️ Token expired!");
-            setStatus("expired");
-          } else {
-            toast.error("❌ Something went wrong!");
-            setStatus("error");
-          }
+          console.log("✅ Activation success:", res.data?.message);
+          setActivated(true);
+        } catch (error) {
+          console.log("❌ Activation error:", error.response?.data?.message);
+          setError(true);
         }
-      };
+      }
+    };
 
-      activateAccount();
-    }
-  }, [activation_token]);
+    activateSeller();
+  }, [token]);
 
   return (
     <div
@@ -47,13 +39,17 @@ const SellerActivationPage = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        fontSize: "1.2rem",
+        fontWeight: "bold",
       }}
     >
-      {status === "loading" && <p>Activating your account...</p>}
-      {status === "success" && <p>Your account has been created successfully!</p>}
-      {status === "exists" && <p>⚠️ This account already exists!</p>}
-      {status === "expired" && <p>⚠️ Token has expired!</p>}
-      {status === "error" && <p>❌ Something went wrong. Please try again.</p>}
+      {error ? (
+        <p style={{ color: "red" }}>Your token is expired or invalid.</p>
+      ) : activated ? (
+        <p style={{ color: "green" }}>Your account has been created successfully!</p>
+      ) : (
+        <p>Activating your account...</p>
+      )}
     </div>
   );
 };
